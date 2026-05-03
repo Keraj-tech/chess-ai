@@ -135,7 +135,8 @@ function can_castle(board, white, kingSide) {
 }
 
 function getAIDepth() {
-    return 2;
+    const difficulty = document.getElementById("difficulty").value;
+    return parseInt(difficulty);
 }
 
 function toggleDifficultyVisibility() {
@@ -585,14 +586,19 @@ function clickCell(i, j) {
             document.body.classList.remove("ai-thinking");
             updateStatus();
             if (ai_mv) {
-                    saveState();
-                if (piece2 === 'p' && sx2 === 7) {
-                    board[sx2][sy2] = 'q';
+                saveState();
+                board = make_move(board, ai_mv);
+                lastMove = [ai_mv[0][0], ai_mv[0][1], ai_mv[1][0], ai_mv[1][1]];
+
+                // Pawn promotion for AI
+                let piece = board[ai_mv[1][0]][ai_mv[1][1]];
+                if (piece === 'p' && ai_mv[1][0] === 7) {
+                    board[ai_mv[1][0]][ai_mv[1][1]] = 'q';
                 }
+
                 white_turn = !white_turn;
                 updateStatus();
-                // Don't update move indicator for AI moves
-                // updateMoveIndicator();
+                updateMoveIndicator();
 
                 // Check game over after AI
                 if (checkmate(board, white_turn)) {
