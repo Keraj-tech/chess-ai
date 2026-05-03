@@ -49,9 +49,91 @@ function in_bounds(x, y) {
     return x >= 0 && x < 8 && y >= 0 && y < 8;
 }
 
+function is_attacked(board, x, y, byWhite) {
+    if (!in_bounds(x, y)) return false;
+
+    // Pawn attacks
+    if (byWhite) {
+        for (let dy of [-1, 1]) {
+            let px = x + 1, py = y + dy;
+            if (in_bounds(px, py) && board[px][py] === 'P') return true;
+        }
+    } else {
+        for (let dy of [-1, 1]) {
+            let px = x - 1, py = y + dy;
+            if (in_bounds(px, py) && board[px][py] === 'p') return true;
+        }
+    }
+
+    // Knight attacks
+    let knightJumps = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
+    for (let [dx,dy] of knightJumps) {
+        let px = x + dx, py = y + dy;
+        if (in_bounds(px, py)) {
+            let piece = board[px][py];
+            if (piece.toLowerCase() === 'n' && is_white(piece) === byWhite) return true;
+        }
+    }
+
+    // King attacks
+    for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+            if (dx === 0 && dy === 0) continue;
+            let px = x + dx, py = y + dy;
+            if (in_bounds(px, py)) {
+                let piece = board[px][py];
+                if (piece.toLowerCase() === 'k' && is_white(piece) === byWhite) return true;
+            }
+        }
+    }
+
+    // Sliding attacks
+    let slideDirections = [
+        [1,0],[-1,0],[0,1],[0,-1],
+        [1,1],[1,-1],[-1,1],[-1,-1]
+    ];
+    for (let [dx,dy] of slideDirections) {
+        let px = x + dx, py = y + dy;
+        while (in_bounds(px, py)) {
+            let piece = board[px][py];
+            if (piece !== '.') {
+                if (is_white(piece) === byWhite) {
+                    let lower = piece.toLowerCase();
+                    if ((dx === 0 || dy === 0) && (lower === 'r' || lower === 'q')) return true;
+                    if ((dx !== 0 && dy !== 0) && (lower === 'b' || lower === 'q')) return true;
+                }
+                break;
+            }
+            px += dx;
+            py += dy;
+        }
+    }
+
+    return false;
+}
+
+function can_castle(board, white, kingSide) {
+    let rank = white ? 7 : 0;
+    let king = white ? 'K' : 'k';
+    let rook = white ? 'R' : 'r';
+    if (board[rank][4] !== king) return false;
+    if (in_check(board, white)) return false;
+
+    if (kingSide) {
+        if (board[rank][7] !== rook) return false;
+        if (board[rank][5] !== '.' || board[rank][6] !== '.') return false;
+        if (is_attacked(board, rank, 5, !white) || is_attacked(board, rank, 6, !white)) return false;
+        return true;
+    }
+
+    if (board[rank][0] !== rook) return false;
+    if (board[rank][1] !== '.' || board[rank][2] !== '.' || board[rank][3] !== '.') return false;
+    if (is_attacked(board, rank, 3, !white) || is_attacked(board, rank, 2, !white)) return false;
+    return true;
+}
+
 function getAIDepth() {
-    const select = document.getElementById("difficulty");
-    return select ? Number(select.value) || 2 : 2;
+    return 2;
 }
 
 function toggleDifficultyVisibility() {
@@ -63,7 +145,7 @@ function toggleDifficultyVisibility() {
 // -------------------------
 // MOVE GENERATION
 // -------------------------
-function get_pseudo_moves(board, white) {
+function get_pseudo_moves(board, white, includeCastling = true) {
     let moves = [];
 
     for (let i = 0; i < 8; i++) {
@@ -137,6 +219,14 @@ function get_pseudo_moves(board, white) {
                         }
                     }
                 }
+                if (includeCastling) {
+                    if (can_castle(board, white, true)) {
+                        moves.push([[i,j],[i,6]]);
+                    }
+                    if (can_castle(board, white, false)) {
+                        moves.push([[i,j],[i,2]]);
+                    }
+                }
             }
         }
     }
@@ -189,6 +279,19 @@ function make_move(board, move) {
     let [[sx,sy],[dx,dy]] = move;
     new_board[dx][dy] = new_board[sx][sy];
     new_board[sx][sy] = '.';
+
+    let piece = board[sx][sy];
+    if (piece.toLowerCase() === 'k' && Math.abs(dy - sy) === 2) {
+        // Castle: move rook too
+        if (dy === 6) {
+            new_board[dx][5] = new_board[dx][7];
+            new_board[dx][7] = '.';
+        } else if (dy === 2) {
+            new_board[dx][3] = new_board[dx][0];
+            new_board[dx][0] = '.';
+        }
+    }
+
     return new_board;
 }
 
@@ -209,7 +312,7 @@ function in_check(board, white) {
     let king = find_king(board, white);
     if (!king) return false;
 
-    let opponent_moves = get_pseudo_moves(board, !white);
+    let opponent_moves = get_pseudo_moves(board, !white, false);
     for (let m of opponent_moves) {
         let [dx,dy] = m[1];
         if (dx === king[0] && dy === king[1]) return true;
@@ -229,7 +332,7 @@ function checkmate(board, white) {
 // -------------------------
 // AI
 // -------------------------
-const AI_MOVE_DELAY_MS = 2000;
+const AI_MOVE_DELAY_MS = 1000;
 const values = {
     'P':1,'R':5,'N':3,'B':3,'Q':9,'K':1000,
     'p':-1,'r':-5,'n':-3,'b':-3,'q':-9,'k':-1000
@@ -273,18 +376,24 @@ function minimax(board, depth, alpha, beta, maximizing) {
 
 function best_move(board, depth) {
     let best_val = Infinity;
-    let best_mv = null;
+    let candidate_moves = [];
 
     let moves = get_moves(board, false); // AI = black
     for (let m of moves) {
         let val = minimax(make_move(board, m), depth, -Infinity, Infinity, true);
         if (val < best_val) {
             best_val = val;
-            best_mv = m;
+            candidate_moves = [m];
+        } else if (val === best_val) {
+            candidate_moves.push(m);
         }
     }
 
-    return best_mv;
+    // Pick randomly among candidates
+    if (candidate_moves.length > 0) {
+        return candidate_moves[Math.floor(Math.random() * candidate_moves.length)];
+    }
+    return null;
 }
 
 // ---------------- DRAW ----------------
