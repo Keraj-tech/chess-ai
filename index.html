@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess AI Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>♛ Chess Master</h1>
+            <div class="controls">
+                <select id="mode" class="mode-select">
+                    <option value="human">👥 Human vs Human</option>
+                    <option value="ai">🤖 Human vs AI</option>
+                </select>
+                <select id="difficulty" class="mode-select difficulty-select">
+                    <option value="1">Level 1 - Easy</option>
+                    <option value="2">Level 2 - Normal</option>
+                    <option value="3">Level 3 - Hard</option>
+                    <option value="4">Level 4 - Expert</option>
+                </select>
+                <button id="resetBtn" type="button" class="reset-btn" onclick="resetGame()">🔄 New Game</button>
+            </div>
+            <div class="status-row">
+                <div id="status" class="status-badge">
+                    <span class="status-label">Current turn:</span>
+                    <strong id="currentPlayer">White</strong>
+                </div>
+                <div id="moveIndicator" class="move-badge">
+                    <span id="lastMoveText">Last move: none</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="game-area">
+            <div id="timer-container" class="timers">
+                <div class="timer white-timer">
+                    <div class="timer-icon">⚪</div>
+                    <span id="w">300</span>
+                </div>
+                <div class="timer black-timer">
+                    <div class="timer-icon">⚫</div>
+                    <span id="b">300</span>
+                </div>
+            </div>
+
+            <div class="board-container">
+                <table id="board" class="chess-board"></table>
+            </div>
+        </div>
+
+        <div id="gameOverScreen" class="game-over-overlay hidden">
+            <div class="game-over-box">
+                <h2 id="gameOverText"></h2>
+                <p id="gameOverDetail" class="game-over-detail"></p>
+                <button type="button" onclick="resetGame()" class="restart-btn">🎯 Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
