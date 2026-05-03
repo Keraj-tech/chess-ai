@@ -127,7 +127,8 @@ h1 {
     box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.5);
 }
 
-.reset-btn {
+.reset-btn,
+.history-btn {
     padding: 12px 20px;
     border: none;
     border-radius: 25px;
@@ -139,9 +140,14 @@ h1 {
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
 }
 
-.reset-btn:hover {
+.reset-btn:hover,
+.history-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.history-btn {
+    background: linear-gradient(45deg, #4ecdc4, #45b7d1);
 }
 
 /* -------- GAME AREA -------- */

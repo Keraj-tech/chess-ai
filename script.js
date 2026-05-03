@@ -4,6 +4,8 @@ let possibleMoves = [];
 let board = create_board();
 let white_turn = true;
 let aiThinking = false;
+let historyStates = [];
+let futureStates = [];
 
 // online images
 const pieceMap = {
@@ -140,6 +142,64 @@ function toggleDifficultyVisibility() {
     const difficulty = document.getElementById("difficulty");
     if (!difficulty) return;
     difficulty.style.display = "inline-block";
+}
+
+function copyBoard(board) {
+    return board.map(row => [...row]);
+}
+
+function updateHistoryButtons() {
+    const undoBtn = document.getElementById("undoBtn");
+    const redoBtn = document.getElementById("redoBtn");
+    if (undoBtn) undoBtn.disabled = historyStates.length === 0 || aiThinking;
+    if (redoBtn) redoBtn.disabled = futureStates.length === 0 || aiThinking;
+}
+
+function saveState() {
+    historyStates.push({
+        board: copyBoard(board),
+        white_turn,
+        lastMove: lastMove ? [...lastMove] : null
+    });
+    futureStates = [];
+    updateHistoryButtons();
+}
+
+function restoreState(state) {
+    board = copyBoard(state.board);
+    white_turn = state.white_turn;
+    lastMove = state.lastMove ? [...state.lastMove] : null;
+    selected = null;
+    possibleMoves = [];
+    aiThinking = false;
+    document.body.classList.remove("ai-thinking");
+    document.getElementById("gameOverScreen").classList.add("hidden");
+    updateStatus();
+    updateMoveIndicator();
+    drawBoard(board);
+    updateHistoryButtons();
+}
+
+function undoMove() {
+    if (historyStates.length === 0) return;
+    futureStates.push({
+        board: copyBoard(board),
+        white_turn,
+        lastMove: lastMove ? [...lastMove] : null
+    });
+    const lastState = historyStates.pop();
+    restoreState(lastState);
+}
+
+function redoMove() {
+    if (futureStates.length === 0) return;
+    historyStates.push({
+        board: copyBoard(board),
+        white_turn,
+        lastMove: lastMove ? [...lastMove] : null
+    });
+    const nextState = futureStates.pop();
+    restoreState(nextState);
 }
 
 // -------------------------
@@ -479,7 +539,8 @@ function clickCell(i, j) {
         return;
     }
 
-    // Make move
+    // Save current state and make move
+    saveState();
     board = make_move(board, mv);
     lastMove = [selected[0], selected[1], i, j];
 
@@ -524,12 +585,7 @@ function clickCell(i, j) {
             document.body.classList.remove("ai-thinking");
             updateStatus();
             if (ai_mv) {
-                board = make_move(board, ai_mv);
-                lastMove = [ai_mv[0][0], ai_mv[0][1], ai_mv[1][0], ai_mv[1][1]];
-
-                // Pawn promotion for AI
-                let [sx2, sy2] = ai_mv[1];
-                let piece2 = board[sx2][sy2];
+                    saveState();
                 if (piece2 === 'p' && sx2 === 7) {
                     board[sx2][sy2] = 'q';
                 }
@@ -636,11 +692,14 @@ function resetGame() {
     lastMove = null;
     possibleMoves = [];
     aiThinking = false;
+    historyStates = [];
+    futureStates = [];
     document.body.classList.remove("ai-thinking");
     document.getElementById("gameOverScreen").classList.add("hidden");
     toggleDifficultyVisibility();
     updateStatus();
     updateMoveIndicator();
+    updateHistoryButtons();
     drawBoard(board);
 }
 
@@ -652,6 +711,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("mode").addEventListener("change", () => {
         resetGame();
     });
+    updateHistoryButtons();
     const difficulty = document.getElementById("difficulty");
     if (difficulty) {
         difficulty.addEventListener("change", () => {
