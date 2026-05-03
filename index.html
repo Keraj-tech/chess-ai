@@ -21,11 +21,11 @@
                     <option value="3">Level 3 - Hard</option>
                     <option value="4">Level 4 - Expert</option>
                 </select>
-                <button id="undoBtn" type="button" class="history-btn" onclick="undoMove()">↶ Undo</button>
-                <button id="redoBtn" type="button" class="history-btn" onclick="redoMove()">↷ Redo</button>
                 <button id="resetBtn" type="button" class="reset-btn" onclick="resetGame()">🔄 New Game</button>
             </div>
             <div class="status-row">
+                <button id="undoBtn" type="button" class="history-btn" onclick="undoMove()">↶ Undo</button>
+                <button id="redoBtn" type="button" class="history-btn" onclick="redoMove()">↷ Redo</button>
                 <div id="status" class="status-badge">
                     <span class="status-label">Current turn:</span>
                     <strong id="currentPlayer">White</strong>
@@ -37,17 +37,6 @@
         </header>
 
         <div class="game-area">
-            <div id="timer-container" class="timers">
-                <div class="timer white-timer">
-                    <div class="timer-icon">⚪</div>
-                    <span id="w">300</span>
-                </div>
-                <div class="timer black-timer">
-                    <div class="timer-icon">⚫</div>
-                    <span id="b">300</span>
-                </div>
-            </div>
-
             <div class="board-container">
                 <table id="board" class="chess-board"></table>
             </div>

@@ -52,7 +52,7 @@ h1 {
 .controls {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 25px;
     flex-wrap: wrap;
 }
 
@@ -129,12 +129,12 @@ h1 {
 
 .reset-btn,
 .history-btn {
-    padding: 12px 20px;
+    padding: 6px 12px;
     border: none;
-    border-radius: 25px;
+    border-radius: 20px;
     background: linear-gradient(45deg, #ff6b6b, #ffa726);
     color: white;
-    font-size: 16px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
@@ -163,15 +163,15 @@ h1 {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    max-width: 400px;
+    max-width: 300px;
     margin-bottom: 20px;
 }
 
 .timer {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 15px 20px;
+    gap: 8px;
+    padding: 10px 15px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     backdrop-filter: blur(10px);
@@ -179,11 +179,11 @@ h1 {
 }
 
 .timer-icon {
-    font-size: 24px;
+    font-size: 18px;
 }
 
 .timer span {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: bold;
     color: #4ecdc4;
 }
@@ -403,7 +403,7 @@ body.ai-thinking td {
     }
 
     .timers {
-        max-width: 350px;
+        max-width: 280px;
     }
 
     td {
@@ -464,19 +464,19 @@ body.ai-thinking td {
     .timers {
         flex-direction: column;
         gap: 10px;
-        max-width: 200px;
+        max-width: 180px;
     }
 
     .timer {
-        padding: 10px 15px;
+        padding: 8px 12px;
     }
 
     .timer-icon {
-        font-size: 20px;
+        font-size: 16px;
     }
 
     .timer span {
-        font-size: 20px;
+        font-size: 16px;
     }
 
     td {
@@ -525,19 +525,19 @@ body.ai-thinking td {
     }
 
     .timers {
-        max-width: 150px;
+        max-width: 140px;
     }
 
     .timer {
-        padding: 8px 12px;
+        padding: 6px 10px;
     }
 
     .timer-icon {
-        font-size: 18px;
+        font-size: 14px;
     }
 
     .timer span {
-        font-size: 18px;
+        font-size: 14px;
     }
 
     td {

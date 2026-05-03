@@ -25,8 +25,36 @@ const pieceMap = {
 };
 
 // -------------------------
-// CREATE BOARD
+// SOUND
 // -------------------------
+function playMoveSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const gainNode = audioContext.createGain();
+        gainNode.connect(audioContext.destination);
+        
+        // Create "tak tak" sound with two quick percussive hits
+        for (let i = 0; i < 2; i++) {
+            const oscillator = audioContext.createOscillator();
+            const oscGain = audioContext.createGain();
+            
+            oscillator.type = 'square'; // Percussive sound
+            oscillator.frequency.setValueAtTime(200 + (i * 50), audioContext.currentTime + (i * 0.1));
+            
+            oscGain.gain.setValueAtTime(0.3, audioContext.currentTime + (i * 0.1));
+            oscGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + (i * 0.1) + 0.08);
+            
+            oscillator.connect(oscGain);
+            oscGain.connect(gainNode);
+            
+            oscillator.start(audioContext.currentTime + (i * 0.1));
+            oscillator.stop(audioContext.currentTime + (i * 0.1) + 0.08);
+        }
+        
+    } catch (e) {
+        // Fallback: no sound if Web Audio API not supported
+    }
+}
 function create_board() {
     return [
         ['r','n','b','q','k','b','n','r'],
@@ -393,7 +421,10 @@ function checkmate(board, white) {
 // -------------------------
 // AI
 // -------------------------
-const AI_MOVE_DELAY_MS = 1000;
+function getAIDelay() {
+    // Consistent 1 second delay for all difficulty levels
+    return 1000;
+}
 const values = {
     'P':1,'R':5,'N':3,'B':3,'Q':9,'K':1000,
     'p':-1,'r':-5,'n':-3,'b':-3,'q':-9,'k':-1000
@@ -558,6 +589,7 @@ function clickCell(i, j) {
     possibleMoves = [];
     updateStatus();
     updateMoveIndicator();
+    playMoveSound();
 
     // Check game over
     if (checkmate(board, white_turn)) {
@@ -599,6 +631,7 @@ function clickCell(i, j) {
                 white_turn = !white_turn;
                 updateStatus();
                 updateMoveIndicator();
+                playMoveSound();
 
                 // Check game over after AI
                 if (checkmate(board, white_turn)) {
@@ -614,7 +647,7 @@ function clickCell(i, j) {
 
                 drawBoard(board);
             }
-        }, AI_MOVE_DELAY_MS); // Slower AI response for a more human-like feel
+        }, getAIDelay()); // Slower AI response for a more human-like feel
     } else {
         drawBoard(board);
     }
