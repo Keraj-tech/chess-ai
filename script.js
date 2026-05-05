@@ -30,26 +30,38 @@ const pieceMap = {
 function playMoveSound() {
     try {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create multiple oscillators for a richer, more pleasant sound
+        const oscillators = [];
         const gainNode = audioContext.createGain();
         gainNode.connect(audioContext.destination);
         
-        // Create "tak tak" sound with two quick percussive hits
-        for (let i = 0; i < 2; i++) {
-            const oscillator = audioContext.createOscillator();
+        // Main note with harmonics for bell-like quality
+        const frequencies = [523, 659, 784, 1047]; // C, E, G, C (octave higher)
+        const gains = [0.2, 0.15, 0.1, 0.05];
+        
+        frequencies.forEach((freq, index) => {
+            const osc = audioContext.createOscillator();
             const oscGain = audioContext.createGain();
             
-            oscillator.type = 'square'; // Percussive sound
-            oscillator.frequency.setValueAtTime(200 + (i * 50), audioContext.currentTime + (i * 0.1));
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioContext.currentTime);
             
-            oscGain.gain.setValueAtTime(0.3, audioContext.currentTime + (i * 0.1));
-            oscGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + (i * 0.1) + 0.08);
+            oscGain.gain.setValueAtTime(0, audioContext.currentTime);
+            oscGain.gain.linearRampToValueAtTime(gains[index], audioContext.currentTime + 0.01);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.8);
             
-            oscillator.connect(oscGain);
+            osc.connect(oscGain);
             oscGain.connect(gainNode);
             
-            oscillator.start(audioContext.currentTime + (i * 0.1));
-            oscillator.stop(audioContext.currentTime + (i * 0.1) + 0.08);
-        }
+            oscillators.push(osc);
+        });
+        
+        // Start and stop all oscillators
+        oscillators.forEach(osc => {
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.0);
+        });
         
     } catch (e) {
         // Fallback: no sound if Web Audio API not supported
@@ -422,8 +434,10 @@ function checkmate(board, white) {
 // AI
 // -------------------------
 function getAIDelay() {
-    // Consistent 1 second delay for all difficulty levels
-    return 1000;
+    const difficulty = parseInt(document.getElementById("difficulty").value);
+    // Faster delays for easier levels, 1.5s for expert
+    const delays = {1: 500, 2: 800, 3: 1200, 4: 1500};
+    return delays[difficulty] || 1500;
 }
 const values = {
     'P':1,'R':5,'N':3,'B':3,'Q':9,'K':1000,
